@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(mkdir -p /tmp/kronos-design)",
+      "Bash(tar -xf /tmp/design.tar -C /tmp/kronos-design)",
+      "Read(//tmp/kronos-design/**)",
+      "Read(//tmp/kronos-design/kronos/**)",
+      "Bash(bun install *)",
+      "Bash(bun run *)"
+    ]
+  }
+}
