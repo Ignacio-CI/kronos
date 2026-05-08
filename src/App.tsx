@@ -9,6 +9,7 @@ import {
   subscribeToEntries,
   saveEntryToDb,
   deleteEntryFromDb,
+  generateEntryId,
 } from "@/lib/db";
 import {
   addDays, downloadCSV, decimalHours, entryDuration,
@@ -118,7 +119,7 @@ export default function App() {
     }
     if (active) {
       const e: Entry = {
-        id: "e" + Math.random().toString(36).slice(2, 8),
+        id: generateEntryId(),
         projectId: active.projectId,
         start: new Date(active.start).toISOString(),
         end: new Date().toISOString(),
@@ -132,7 +133,7 @@ export default function App() {
   const stopTimer = () => {
     if (!active) return;
     const e: Entry = {
-      id: "e" + Math.random().toString(36).slice(2, 8),
+      id: generateEntryId(),
       projectId: active.projectId,
       start: new Date(active.start).toISOString(),
       end: new Date().toISOString(),

@@ -15,6 +15,8 @@ const entriesCollection = collection(db, "entries");
 
 // --- Projects ---
 
+export const generateProjectId = () => doc(projectsCollection).id;
+
 export const subscribeToProjects = (callback: (projects: Project[]) => void) => {
   const q = query(projectsCollection);
   return onSnapshot(q, (snapshot) => {
@@ -37,6 +39,8 @@ export const deleteProjectFromDb = async (projectId: string) => {
 };
 
 // --- Entries ---
+
+export const generateEntryId = () => doc(entriesCollection).id;
 
 export const subscribeToEntries = (callback: (entries: Entry[]) => void) => {
   const q = query(entriesCollection);

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Entry, Project } from "@/types";
 import { decimalHours, formatHMS, pad, renderMD } from "@/lib/utils";
+import { generateEntryId } from "@/lib/db";
 
 export type EntryDraft = Partial<Entry>;
 
@@ -36,7 +37,7 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
   const save = () => {
     onSave({
       ...entry,
-      id: entry.id ?? ("e" + Math.random().toString(36).slice(2, 8)),
+      id: entry.id ?? generateEntryId(),
       projectId,
       start: new Date(startMs).toISOString(),
       end: new Date(endMs).toISOString(),
