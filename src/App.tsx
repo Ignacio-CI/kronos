@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import type {
   ActiveSession, Entry, Project, Route, Tweaks, Typography,
 } from "@/types";
-import { PROJECTS, ENTRIES } from "@/lib/seed";
+import {
+  subscribeToProjects,
+  saveProjectToDb,
+  deleteProjectFromDb,
+  subscribeToEntries,
+  saveEntryToDb,
+  deleteEntryFromDb,
+} from "@/lib/db";
 import {
   addDays, downloadCSV, decimalHours, entryDuration,
   startOfDay, startOfWeekMon, toCSV,
@@ -37,8 +44,8 @@ function applyTypography(mode: Typography): void {
 }
 
 export default function App() {
-  const [projects, setProjects] = useState<Project[]>(PROJECTS);
-  const [entries, setEntries] = useState<Entry[]>(ENTRIES);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [entries, setEntries] = useState<Entry[]>([]);
   const [route, setRoute] = useState<Route>("dashboard");
   const [tweaks, setTweaksState] = useState<Tweaks>(TWEAK_DEFAULTS);
   const [editingEntry, setEditingEntry] = useState<EntryDraft | null>(null);
@@ -58,6 +65,15 @@ export default function App() {
     document.documentElement.dataset.density = tweaks.density;
     applyTypography(tweaks.typography);
   }, [tweaks]);
+
+  useEffect(() => {
+    const unsubProjects = subscribeToProjects((data) => setProjects(data));
+    const unsubEntries = subscribeToEntries((data) => setEntries(data));
+    return () => {
+      unsubProjects();
+      unsubEntries();
+    };
+  }, []);
 
   const runningMs = active ? Date.now() - active.start : 0;
   const activeProject = active ? projects.find(p => p.id === active.projectId) ?? null : null;
@@ -108,7 +124,7 @@ export default function App() {
         end: new Date().toISOString(),
         note: "",
       };
-      setEntries(prev => [...prev, e]);
+      saveEntryToDb(e);
     }
     setActive({ projectId, start: Date.now() });
   };
@@ -122,36 +138,33 @@ export default function App() {
       end: new Date().toISOString(),
       note: "",
     };
-    setEntries(prev => [...prev, e]);
+    saveEntryToDb(e);
     setActive(null);
   };
 
   const pauseTimer = () => stopTimer();
 
   const saveEntry = (e: Entry) => {
-    setEntries(prev => {
-      const exists = prev.find(x => x.id === e.id);
-      if (exists) return prev.map(x => x.id === e.id ? e : x);
-      return [...prev, e];
-    });
+    saveEntryToDb(e);
   };
 
   const deleteEntry = (id: string) => {
-    setEntries(prev => prev.filter(e => e.id !== id));
+    deleteEntryFromDb(id);
   };
 
   const saveProject = (p: Project) => {
-    setProjects(prev => {
-      const exists = prev.find(x => x.id === p.id);
-      if (exists) return prev.map(x => x.id === p.id ? p : x);
-      return [...prev, p];
-    });
+    saveProjectToDb(p);
   };
 
   const deleteProject = (id: string) => {
     if (active && active.projectId === id) setActive(null);
-    setEntries(prev => prev.filter(e => e.projectId !== id));
-    setProjects(prev => prev.filter(p => p.id !== id));
+    deleteProjectFromDb(id);
+    // Clean up orphaned entries
+    entries.forEach(e => {
+      if (e.projectId === id) {
+        deleteEntryFromDb(e.id);
+      }
+    });
   };
 
   const exportCSV = () => {
