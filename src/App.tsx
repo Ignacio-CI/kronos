@@ -19,6 +19,7 @@ import { useTicker } from "@/hooks/useTicker";
 import { Sidebar } from "@/components/Sidebar";
 import { EntryModal, type EntryDraft } from "@/components/EntryModal";
 import { ProjectModal, type ProjectDraft } from "@/components/ProjectModal";
+import { ExportModal } from "@/components/ExportModal";
 import { KronosTweaksPanel } from "@/components/KronosTweaksPanel";
 import { DashboardView, type Totals } from "@/views/DashboardView";
 import { CalendarView } from "@/views/CalendarView";
@@ -51,6 +52,7 @@ export default function App() {
   const [tweaks, setTweaksState] = useState<Tweaks>(TWEAK_DEFAULTS);
   const [editingEntry, setEditingEntry] = useState<EntryDraft | null>(null);
   const [editingProject, setEditingProject] = useState<ProjectDraft | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const [calWeekOffset, setCalWeekOffset] = useState(0);
 
   const [active, setActive] = useState<ActiveSession | null>(null);
@@ -169,8 +171,7 @@ export default function App() {
   };
 
   const exportCSV = () => {
-    const csv = toCSV(entries, projects);
-    downloadCSV("kronos-export-" + new Date().toISOString().slice(0, 10) + ".csv", csv);
+    setIsExporting(true);
   };
 
   const runningEntry: Entry | null = active ? {
@@ -263,6 +264,14 @@ export default function App() {
           onSave={saveProject}
           onDelete={deleteProject}
           onClose={() => setEditingProject(null)}
+        />
+      )}
+
+      {isExporting && (
+        <ExportModal
+          projects={projects}
+          entries={entries}
+          onClose={() => setIsExporting(false)}
         />
       )}
 

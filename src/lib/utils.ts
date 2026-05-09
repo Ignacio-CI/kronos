@@ -55,6 +55,13 @@ export function startOfWeekMon(d: Date = new Date()): Date {
   return x;
 }
 
+export function startOfMonth(d: Date = new Date()): Date {
+  const x = new Date(d);
+  x.setDate(1);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
 export function addDays(d: Date, n: number): Date {
   const x = new Date(d);
   x.setDate(x.getDate() + n);
@@ -113,6 +120,10 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
     ["id", "client", "project", "date", "start", "end", "duration_h", "rate", "revenue", "note"],
   ];
   const projMap = Object.fromEntries(projects.map(p => [p.id, p]));
+  
+  let totalHours = 0;
+  let totalRevenue = 0;
+
   entries.forEach(e => {
     const p = projMap[e.projectId];
     if (!p) return;
@@ -120,6 +131,11 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
     const end = e.end ? new Date(e.end) : new Date();
     const dur = entryDuration(e);
     const hours = decimalHours(dur);
+    const revenue = hours * p.rate;
+    
+    totalHours += hours;
+    totalRevenue += revenue;
+
     rows.push([
       e.id,
       p.client,
@@ -129,10 +145,17 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
       formatTime(end),
       hours.toFixed(2),
       p.rate.toFixed(2),
-      (hours * p.rate).toFixed(2),
+      revenue.toFixed(2),
       (e.note || "").replace(/[\r\n]+/g, " ").replace(/"/g, '""'),
     ]);
   });
+  
+  // Add total row
+  rows.push([
+    "TOTAL", "", "", "", "", "", 
+    totalHours.toFixed(2), "", totalRevenue.toFixed(2), ""
+  ]);
+
   return rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
 }
 
