@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Project } from "@/types";
+import { generateProjectId } from "@/lib/db";
 
 const PROJECT_COLORS = [
   "oklch(52% 0.16 35)",   // terracotta
@@ -41,7 +42,7 @@ export function ProjectModal({
     if (!canSave) return;
     onSave({
       ...project,
-      id: project.id ?? ("p" + Math.random().toString(36).slice(2, 8)),
+      id: project.id ?? generateProjectId(),
       client: client.trim(),
       name: name.trim(),
       rate: Number(rate) || 0,
