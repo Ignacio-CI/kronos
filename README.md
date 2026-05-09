@@ -1,8 +1,8 @@
 # Kronos
 
-Kronos es una aplicación web de gestión de tiempo y proyectos, diseñada para proporcionar una interfaz clara y eficiente para el seguimiento de horas por proyecto.
+Kronos is a time tracking and project management web application, designed to provide a clear and efficient interface for tracking hours per project.
 
-## Tecnologías
+## Technologies
 
 - [React 19](https://react.dev/)
 - [Vite](https://vitejs.dev/)
@@ -10,30 +10,30 @@ Kronos es una aplicación web de gestión de tiempo y proyectos, diseñada para 
 - [TypeScript](https://www.typescriptlang.org/)
 - [Firebase](https://firebase.google.com/)
 
-## Desarrollo
+## Development
 
-Para ejecutar el proyecto en tu entorno local:
+To run the project in your local environment:
 
-1. Clona el repositorio:
+1. Clone the repository:
    ```bash
    git clone git@github-personal:Ignacio-CI/kronos.git
    cd kronos
    ```
 
-2. Instala las dependencias (se recomienda usar [Bun](https://bun.sh/) ya que el proyecto incluye un `bun.lock`):
+2. Install dependencies (using [Bun](https://bun.sh/) is recommended as the project includes a `bun.lock`):
    ```bash
    bun install
    ```
-   *Alternativamente puedes usar `npm install` o `yarn`.*
+   *Alternatively, you can use `npm install` or `yarn`.*
 
-3. Inicia el servidor de desarrollo:
+3. Start the development server:
    ```bash
    bun run dev
    ```
 
-## Scripts Disponibles
+## Available Scripts
 
-- `dev`: Inicia el servidor de desarrollo con Vite.
-- `build`: Ejecuta el chequeo de tipos y compila la aplicación para producción.
-- `preview`: Previsualiza localmente la versión de producción compilada.
-- `typecheck`: Revisa los tipos de TypeScript sin generar archivos.
+- `dev`: Starts the development server with Vite.
+- `build`: Runs type checking and builds the app for production.
+- `preview`: Locally previews the production build.
+- `typecheck`: Runs TypeScript type checking without emitting files.
