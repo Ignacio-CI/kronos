@@ -124,7 +124,9 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
   let totalHours = 0;
   let totalRevenue = 0;
 
-  entries.forEach(e => {
+  const sorted = [...entries].sort((a, b) => b.start.localeCompare(a.start));
+
+  sorted.forEach(e => {
     const p = projMap[e.projectId];
     if (!p) return;
     const start = new Date(e.start);
