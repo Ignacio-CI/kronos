@@ -170,3 +170,13 @@ export function downloadCSV(filename: string, content: string): void {
 
 export const entryType = (e: Entry): EntryType => e.type ?? "work";
 export const entryTypeLabel = (t: EntryType) => t[0]!.toUpperCase() + t.slice(1);
+
+// New entries fill the day from 09:00, or from where the day's last entry ended, until 17:00
+export function nextEntrySlot(entries: Entry[], day: Date): { start: string; end: string } {
+  const ends = entries
+    .filter(e => e.end && sameDay(new Date(e.start), day))
+    .map(e => new Date(e.end!).getTime());
+  const start = ends.length ? Math.max(...ends) : new Date(day).setHours(9, 0, 0, 0);
+  const end = Math.max(new Date(day).setHours(17, 0, 0, 0), start + HOUR);
+  return { start: new Date(start).toISOString(), end: new Date(end).toISOString() };
+}

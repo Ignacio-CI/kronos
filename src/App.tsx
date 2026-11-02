@@ -19,6 +19,7 @@ import {
 import {
     addDays,
     entryDuration,
+    nextEntrySlot,
     startOfDay,
     startOfWeekMon,
 } from "@/lib/utils";
@@ -125,6 +126,8 @@ export default function App() {
         (active ? runningMs : 0);
 
     // === actions ===
+    const newEntryOn = (day: Date) => setEditingEntry(nextEntrySlot(entries, day));
+
     const startTimer = (projectId: string) => {
         if (active && active.projectId === projectId) {
             stopTimer();
@@ -216,7 +219,7 @@ export default function App() {
                 activeProject={activeProject}
                 runningMs={runningMs}
                 today={today}
-                onNewEntry={() => setEditingEntry({})}
+                onNewEntry={() => newEntryOn(new Date())}
                 onNewProject={() => setEditingProject({})}
                 onExportCSV={exportCSV}
             />
@@ -246,19 +249,10 @@ export default function App() {
                         weekStart={calWeekStart}
                         weekEnd={calWeekEnd}
                         onEditEntry={setEditingEntry}
-                        onAddAt={(d) => {
-                            const start = new Date(d);
-                            start.setHours(9, 0, 0, 0);
-                            const end = new Date(d);
-                            end.setHours(17, 0, 0, 0);
-                            setEditingEntry({
-                                start: start.toISOString(),
-                                end: end.toISOString(),
-                            });
-                        }}
+                        onAddAt={newEntryOn}
                         offset={calWeekOffset}
                         setOffset={setCalWeekOffset}
-                        onAdd={() => setEditingEntry({})}
+                        onAdd={() => newEntryOn(new Date())}
                     />
                 )}
             </main>
