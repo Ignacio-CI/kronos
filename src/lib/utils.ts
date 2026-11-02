@@ -1,4 +1,4 @@
-import type { Entry, Project } from "@/types";
+import type { Entry, EntryType, Project } from "@/types";
 
 export const MS = 1000;
 export const MIN = 60 * MS;
@@ -117,7 +117,7 @@ export function renderMD(text: string | undefined): string {
 // CSV export
 export function toCSV(entries: Entry[], projects: Project[]): string {
   const rows: (string | number)[][] = [
-    ["id", "client", "project", "date", "start", "end", "duration_h", "note"],
+    ["id", "client", "project", "date", "start", "end", "duration_h", "type", "note"],
   ];
   const projMap = Object.fromEntries(projects.map(p => [p.id, p]));
   
@@ -143,6 +143,7 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
       formatTime(start),
       formatTime(end),
       hours.toFixed(2),
+      entryType(e),
       (e.note || "").replace(/[\r\n]+/g, " ").replace(/"/g, '""'),
     ]);
   });
@@ -150,7 +151,7 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
   // Add total row
   rows.push([
     "TOTAL", "", "", "", "", "", 
-    totalHours.toFixed(2), ""
+    totalHours.toFixed(2), "", ""
   ]);
 
   return rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
@@ -166,3 +167,6 @@ export function downloadCSV(filename: string, content: string): void {
   a.click();
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
 }
+
+export const entryType = (e: Entry): EntryType => e.type ?? "work";
+export const entryTypeLabel = (t: EntryType) => t[0]!.toUpperCase() + t.slice(1);

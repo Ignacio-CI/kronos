@@ -7,12 +7,16 @@ export type Project = {
   note: string;
 };
 
+export const ENTRY_TYPES = ["work", "meeting", "planning", "other"] as const;
+export type EntryType = (typeof ENTRY_TYPES)[number];
+
 export type Entry = {
   id: string;
   projectId: string;
   start: string;
   end: string | null;
   note: string;
+  type?: EntryType;
   _running?: boolean;
 };
 

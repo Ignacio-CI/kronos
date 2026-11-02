@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { Entry, Project } from "@/types";
-import { decimalHours, formatHMS, pad, renderMD } from "@/lib/utils";
+import { ENTRY_TYPES, type Entry, type EntryType, type Project } from "@/types";
+import { decimalHours, entryTypeLabel, formatHMS, pad, renderMD } from "@/lib/utils";
 import { generateEntryId } from "@/lib/db";
 
 export type EntryDraft = Partial<Entry>;
@@ -35,6 +35,7 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
     return pad(d.getHours()) + ":" + pad(d.getMinutes());
   });
   const [note, setNote] = useState<string>(entry.note ?? "");
+  const [type, setType] = useState<EntryType>(entry.type ?? "work");
 
   const startMs = new Date(date + "T" + startTime).getTime();
   const endMs = new Date(date + "T" + endTime).getTime();
@@ -48,6 +49,7 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
       start: new Date(startMs).toISOString(),
       end: new Date(endMs).toISOString(),
       note,
+      type,
     });
     onClose();
   };
@@ -68,13 +70,23 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
         </div>
 
         <div className="modal-body">
-          <div className="field">
-            <label>Project</label>
-            <select value={projectId} onChange={e => setProjectId(e.target.value)}>
-              {projects.map(p => (
-                <option key={p.id} value={p.id}>{p.client} — {p.name}</option>
-              ))}
-            </select>
+          <div className="field-row">
+            <div className="field">
+              <label>Project</label>
+              <select value={projectId} onChange={e => setProjectId(e.target.value)}>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.client} — {p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label>Type</label>
+              <select value={type} onChange={e => setType(e.target.value as EntryType)}>
+                {ENTRY_TYPES.map(t => (
+                  <option key={t} value={t}>{entryTypeLabel(t)}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="field-row">

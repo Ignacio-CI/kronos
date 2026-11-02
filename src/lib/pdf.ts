@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 import type { Entry, Project } from "@/types";
-import { entryDuration, decimalHours } from "@/lib/utils";
+import { entryDuration, decimalHours, entryType, entryTypeLabel } from "@/lib/utils";
 
 function plainText(md: string): string {
   return md
@@ -18,6 +18,7 @@ function formatDay(iso: string): string {
 }
 
 const hours = (h: number) => h.toFixed(2) + " h";
+const sumHours = (es: Entry[]) => es.reduce((s, e) => s + decimalHours(entryDuration(e)), 0);
 
 type RGB = [number, number, number];
 
@@ -61,7 +62,8 @@ export function buildPDF(entries: Entry[], projects: Project[], periodLabel: str
   doc.setTextColor(0);
 
   let y = 36;
-  let grandTotal = 0;
+  let grandWork = 0;
+  let grandOther = 0;
 
   for (const p of projects) {
     const projectEntries = entries
@@ -69,8 +71,10 @@ export function buildPDF(entries: Entry[], projects: Project[], periodLabel: str
       .sort((a, b) => b.start.localeCompare(a.start));
     if (projectEntries.length === 0) continue;
 
-    const total = projectEntries.reduce((sum, e) => sum + decimalHours(entryDuration(e)), 0);
-    grandTotal += total;
+    const work = sumHours(projectEntries.filter(e => entryType(e) === "work"));
+    const other = sumHours(projectEntries.filter(e => entryType(e) !== "work"));
+    grandWork += work;
+    grandOther += other;
 
     if (y > doc.internal.pageSize.getHeight() - 40) {
       doc.addPage();
@@ -84,16 +88,26 @@ export function buildPDF(entries: Entry[], projects: Project[], periodLabel: str
     doc.setTextColor(0);
     doc.setFont("helvetica", "normal");
 
+    const normal = { fontStyle: "normal" as const };
     autoTable(doc, {
       startY: y + 3,
       margin: { left: margin, right: margin },
-      head: [["Date", "Description", "Hours"]],
+      head: [["Date", "Type", "Description", "Hours"]],
       body: projectEntries.map(e => [
         formatDay(e.start),
+        entryTypeLabel(entryType(e)),
         plainText(e.note) || "—",
         hours(decimalHours(entryDuration(e))),
       ]),
-      foot: [["", "Project total", hours(total)]],
+      foot: [
+        ...(other > 0
+          ? [
+              ["", "", { content: "Work", styles: normal }, { content: hours(work), styles: normal }],
+              ["", "", { content: "Non-billable", styles: normal }, { content: hours(other), styles: normal }],
+            ]
+          : []),
+        ["", "", "Project total", hours(work + other)],
+      ],
       showFoot: "lastPage",
       theme: "striped",
       styles: { fontSize: 9, cellPadding: 2, valign: "top", textColor: 40 },
@@ -102,21 +116,34 @@ export function buildPDF(entries: Entry[], projects: Project[], periodLabel: str
       footStyles: { fillColor: colors.foot, textColor: 20, fontStyle: "bold" },
       columnStyles: {
         0: { cellWidth: 32 },
-        2: { cellWidth: 22, halign: "right" },
+        1: { cellWidth: 20 },
+        3: { cellWidth: 22, halign: "right" },
+      },
+      didParseCell: data => {
+        if (data.column.index === 3) data.cell.styles.halign = "right";
       },
     });
 
     y = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 14;
   }
 
-  if (y > doc.internal.pageSize.getHeight() - 20) {
+  if (y > doc.internal.pageSize.getHeight() - 30) {
     doc.addPage();
     y = 20;
+  }
+  const right = doc.internal.pageSize.getWidth() - margin;
+  if (grandOther > 0) {
+    doc.setFontSize(11);
+    doc.text("Work", margin, y);
+    doc.text(hours(grandWork), right, y, { align: "right" });
+    doc.text("Non-billable", margin, y + 6);
+    doc.text(hours(grandOther), right, y + 6, { align: "right" });
+    y += 14;
   }
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
   doc.text("Grand total", margin, y);
-  doc.text(hours(grandTotal), doc.internal.pageSize.getWidth() - margin, y, { align: "right" });
+  doc.text(hours(grandWork + grandOther), right, y, { align: "right" });
 
   return doc;
 }
