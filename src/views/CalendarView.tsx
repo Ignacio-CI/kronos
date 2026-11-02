@@ -10,7 +10,7 @@ type CalendarViewProps = {
   weekStart: Date;
   weekEnd: Date;
   onEditEntry: (e: Entry) => void;
-  onAddAt: (d: Date, hourFloat: number) => void;
+  onAddAt: (d: Date) => void;
   offset: number;
   setOffset: (n: number) => void;
   onAdd: () => void;

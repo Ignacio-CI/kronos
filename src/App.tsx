@@ -255,17 +255,11 @@ export default function App() {
                         weekStart={calWeekStart}
                         weekEnd={calWeekEnd}
                         onEditEntry={setEditingEntry}
-                        onAddAt={(d, hourFloat) => {
+                        onAddAt={(d) => {
                             const start = new Date(d);
-                            start.setHours(
-                                Math.floor(hourFloat),
-                                Math.round((hourFloat % 1) * 60),
-                                0,
-                                0,
-                            );
-                            const end = new Date(
-                                start.getTime() + 60 * 60 * 1000,
-                            );
+                            start.setHours(9, 0, 0, 0);
+                            const end = new Date(d);
+                            end.setHours(17, 0, 0, 0);
                             setEditingEntry({
                                 start: start.toISOString(),
                                 end: end.toISOString(),

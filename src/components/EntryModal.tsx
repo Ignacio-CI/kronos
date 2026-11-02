@@ -13,19 +13,25 @@ type EntryModalProps = {
   onClose: () => void;
 };
 
+const todayAt = (hour: number) => {
+  const d = new Date();
+  d.setHours(hour, 0, 0, 0);
+  return d;
+};
+
 export function EntryModal({ entry, projects, onSave, onDelete, onClose }: EntryModalProps) {
   const isNew = !entry.id;
   const [projectId, setProjectId] = useState<string>(entry.projectId ?? projects[0]!.id);
   const [date, setDate] = useState<string>(() => {
-    const d = new Date(entry.start ?? Date.now());
+    const d = new Date(entry.start ?? todayAt(9));
     return d.toISOString().slice(0, 10);
   });
   const [startTime, setStartTime] = useState<string>(() => {
-    const d = new Date(entry.start ?? Date.now());
+    const d = new Date(entry.start ?? todayAt(9));
     return pad(d.getHours()) + ":" + pad(d.getMinutes());
   });
   const [endTime, setEndTime] = useState<string>(() => {
-    const d = new Date(entry.end ?? (Date.now() + 60 * 60 * 1000));
+    const d = new Date(entry.end ?? todayAt(17));
     return pad(d.getHours()) + ":" + pad(d.getMinutes());
   });
   const [note, setNote] = useState<string>(entry.note ?? "");
