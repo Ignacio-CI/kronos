@@ -47,7 +47,7 @@ export function Sidebar({
         <span className="nav-num">+</span>
       </button>
       <button className="nav-item" onClick={onExportCSV}>
-        <span>Export CSV</span>
+        <span>Export</span>
         <span className="nav-num">↓</span>
       </button>
 

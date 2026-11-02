@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import type { Entry, Project } from "@/types";
 import { startOfWeekMon, startOfMonth, entryDuration, toCSV, downloadCSV } from "@/lib/utils";
+import { buildPDF } from "@/lib/pdf";
 
 type ExportModalProps = {
   projects: Project[];
@@ -8,17 +9,22 @@ type ExportModalProps = {
   onClose: () => void;
 };
 
-type TimePeriod = "all_time" | "this_week" | "this_month" | "custom";
+type TimePeriod = "all_time" | "this_week" | "this_month" | "last_month" | "custom";
+type Format = "pdf" | "csv";
+
+const formatDay = (ms: number) =>
+  new Date(ms).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
 export function ExportModal({ projects, entries, onClose }: ExportModalProps) {
   const [projectId, setProjectId] = useState<string>("all");
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("all_time");
+  const [format, setFormat] = useState<Format>("pdf");
   
   const today = new Date();
   const [customStart, setCustomStart] = useState<string>(today.toISOString().slice(0, 10));
   const [customEnd, setCustomEnd] = useState<string>(today.toISOString().slice(0, 10));
 
-  const { filteredEntries, projectHours } = useMemo(() => {
+  const { filteredEntries, projectHours, periodLabel } = useMemo(() => {
     let startMs = 0;
     let endMs = Infinity;
 
@@ -26,6 +32,10 @@ export function ExportModal({ projects, entries, onClose }: ExportModalProps) {
       startMs = startOfWeekMon(today).getTime();
     } else if (timePeriod === "this_month") {
       startMs = startOfMonth(today).getTime();
+    } else if (timePeriod === "last_month") {
+      const thisMonth = startOfMonth(today);
+      startMs = new Date(thisMonth.getFullYear(), thisMonth.getMonth() - 1, 1).getTime();
+      endMs = thisMonth.getTime() - 1;
     } else if (timePeriod === "custom") {
       if (customStart) {
         startMs = new Date(customStart).getTime();
@@ -57,13 +67,20 @@ export function ExportModal({ projects, entries, onClose }: ExportModalProps) {
       ? periodEntries 
       : periodEntries.filter(e => e.projectId === projectId);
 
-    return { filteredEntries: finalEntries, projectHours: hoursByProject };
+    const label = timePeriod === "all_time"
+      ? "All time"
+      : `${formatDay(startMs)} – ${formatDay(endMs === Infinity ? today.getTime() : endMs)}`;
+
+    return { filteredEntries: finalEntries, projectHours: hoursByProject, periodLabel: label };
   }, [entries, projects, timePeriod, customStart, customEnd, projectId]);
 
   const handleExport = () => {
-    const csv = toCSV(filteredEntries, projects);
     const dateStr = new Date().toISOString().slice(0, 10);
-    downloadCSV(`kronos-export-${dateStr}.csv`, csv);
+    if (format === "pdf") {
+      buildPDF(filteredEntries, projects, periodLabel).save(`kronos-report-${dateStr}.pdf`);
+    } else {
+      downloadCSV(`kronos-export-${dateStr}.csv`, toCSV(filteredEntries, projects));
+    }
     onClose();
   };
 
@@ -73,7 +90,7 @@ export function ExportModal({ projects, entries, onClose }: ExportModalProps) {
         <div className="modal-head">
           <div>
             <div className="eyebrow">export data</div>
-            <div className="title">Download CSV</div>
+            <div className="title">Download report</div>
           </div>
           <button onClick={onClose} aria-label="Close" className="muted">
             <div className="icon-x" />
@@ -81,6 +98,14 @@ export function ExportModal({ projects, entries, onClose }: ExportModalProps) {
         </div>
 
         <div className="modal-body">
+          <div className="field">
+            <label>Format</label>
+            <select value={format} onChange={e => setFormat(e.target.value as Format)}>
+              <option value="pdf">PDF</option>
+              <option value="csv">CSV</option>
+            </select>
+          </div>
+
           <div className="field">
             <label>Time Period</label>
             <select
@@ -90,6 +115,7 @@ export function ExportModal({ projects, entries, onClose }: ExportModalProps) {
               <option value="all_time">All Time</option>
               <option value="this_week">This Week</option>
               <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
               <option value="custom">Custom Range</option>
             </select>
           </div>
