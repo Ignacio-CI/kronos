@@ -53,7 +53,6 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
   };
 
   const project = projects.find(p => p.id === projectId);
-  const revenue = project ? decimalHours(dur) * project.rate : 0;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -121,14 +120,6 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
               <div>
                 <div className="lbl">Hours</div>
                 <div className="val">{decimalHours(dur).toFixed(2)}</div>
-              </div>
-              <div>
-                <div className="lbl">Rate</div>
-                <div className="val">${project.rate}/h</div>
-              </div>
-              <div>
-                <div className="lbl">Revenue</div>
-                <div className="val" style={{ color: "var(--accent)" }}>${revenue.toFixed(0)}</div>
               </div>
             </div>
           )}

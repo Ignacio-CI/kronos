@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Entry, Project } from "@/types";
-import { decimalHours, entryDuration, formatHM, formatRange } from "@/lib/utils";
+import { entryDuration, formatHM, formatRange } from "@/lib/utils";
 import { WeekCalendar } from "@/components/WeekCalendar";
 
 type CalendarViewProps = {
@@ -25,10 +25,6 @@ export function CalendarView({
   const filtered = filter === "all" ? entries : entries.filter(e => e.projectId === filter);
 
   const totalMs = filtered.reduce((s, e) => s + entryDuration(e), 0);
-  const revenue = filtered.reduce((s, e) => {
-    const p = projects.find(x => x.id === e.projectId);
-    return s + (p ? decimalHours(entryDuration(e)) * p.rate : 0);
-  }, 0);
 
   const weekIndex = Math.ceil(
     (weekStart.getTime() - new Date(weekStart.getFullYear(), 0, 1).getTime())
@@ -45,8 +41,6 @@ export function CalendarView({
         <div className="page-meta">
           <strong>{formatHM(totalMs)}</strong>
           {filtered.length} sessions
-          <br />
-          ${revenue.toLocaleString("en-US", { maximumFractionDigits: 0 })} billable
         </div>
       </div>
 

@@ -3,7 +3,6 @@ export type Project = {
   client: string;
   name: string;
   color: string;
-  rate: number;
   target: number;
   note: string;
 };

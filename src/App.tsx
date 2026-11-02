@@ -18,7 +18,6 @@ import {
 } from "@/lib/db";
 import {
     addDays,
-    decimalHours,
     entryDuration,
     startOfDay,
     startOfWeekMon,
@@ -124,13 +123,6 @@ export default function App() {
     const weekTotalMs =
         Object.values(totals).reduce((s, t) => s + t.weekMs, 0) +
         (active ? runningMs : 0);
-
-    const weekRevenue = projects.reduce((s, p) => {
-        const t = totals[p.id]!;
-        const ms =
-            t.weekMs + (active && active.projectId === p.id ? runningMs : 0);
-        return s + decimalHours(ms) * p.rate;
-    }, 0);
 
     // === actions ===
     const startTimer = (projectId: string) => {
@@ -243,7 +235,6 @@ export default function App() {
                         onEditProject={(p) => setEditingProject(p)}
                         onAddProject={() => setEditingProject({})}
                         weekTotalMs={weekTotalMs}
-                        weekRevenue={weekRevenue}
                         timerStyle={tweaks.timerStyle}
                     />
                 )}

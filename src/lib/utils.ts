@@ -29,7 +29,7 @@ export function formatHM(ms: number): string {
   return h + "h " + pad(m) + "m";
 }
 
-// 4.32 (decimal hours, for revenue calcs)
+// 4.32 (decimal hours)
 export function decimalHours(ms: number): number {
   return ms / HOUR;
 }
@@ -117,12 +117,11 @@ export function renderMD(text: string | undefined): string {
 // CSV export
 export function toCSV(entries: Entry[], projects: Project[]): string {
   const rows: (string | number)[][] = [
-    ["id", "client", "project", "date", "start", "end", "duration_h", "rate", "revenue", "note"],
+    ["id", "client", "project", "date", "start", "end", "duration_h", "note"],
   ];
   const projMap = Object.fromEntries(projects.map(p => [p.id, p]));
   
   let totalHours = 0;
-  let totalRevenue = 0;
 
   const sorted = [...entries].sort((a, b) => b.start.localeCompare(a.start));
 
@@ -133,10 +132,8 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
     const end = e.end ? new Date(e.end) : new Date();
     const dur = entryDuration(e);
     const hours = decimalHours(dur);
-    const revenue = hours * p.rate;
     
     totalHours += hours;
-    totalRevenue += revenue;
 
     rows.push([
       e.id,
@@ -146,8 +143,6 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
       formatTime(start),
       formatTime(end),
       hours.toFixed(2),
-      p.rate.toFixed(2),
-      revenue.toFixed(2),
       (e.note || "").replace(/[\r\n]+/g, " ").replace(/"/g, '""'),
     ]);
   });
@@ -155,7 +150,7 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
   // Add total row
   rows.push([
     "TOTAL", "", "", "", "", "", 
-    totalHours.toFixed(2), "", totalRevenue.toFixed(2), ""
+    totalHours.toFixed(2), ""
   ]);
 
   return rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");

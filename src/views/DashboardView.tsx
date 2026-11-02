@@ -23,7 +23,6 @@ type DashboardViewProps = {
   stopTimer: () => void;
   pauseTimer: () => void;
   weekTotalMs: number;
-  weekRevenue: number;
   timerStyle: TimerStyle;
   onEditProject: (p: Project) => void;
   onAddProject: () => void;
@@ -31,7 +30,7 @@ type DashboardViewProps = {
 
 export function DashboardView({
   projects, totals, active, runningMs, activeProject,
-  startTimer, stopTimer, pauseTimer, weekTotalMs, weekRevenue,
+  startTimer, stopTimer, pauseTimer, weekTotalMs,
   timerStyle, onEditProject, onAddProject,
 }: DashboardViewProps) {
   const projectsHours: ProjectHours[] = projects.map(p => {
@@ -43,7 +42,6 @@ export function DashboardView({
     };
   });
 
-  const billableMs = projectsHours.reduce((s, p) => s + p.ms, 0);
   const weekIndex = Math.ceil(
     (startOfDay(new Date()).getTime() - new Date(new Date().getFullYear(), 0, 1).getTime())
     / (7 * 24 * 3600 * 1000),
@@ -63,8 +61,6 @@ export function DashboardView({
         <div className="page-meta">
           <strong>{formatHM(weekTotalMs)}</strong>
           this week
-          <br />
-          ${weekRevenue.toLocaleString("en-US", { maximumFractionDigits: 0 })} billable
         </div>
       </div>
 
@@ -128,8 +124,6 @@ export function DashboardView({
 
         <WeekSummaryStrip
           weekMs={weekTotalMs}
-          weekRevenue={weekRevenue}
-          billableMs={billableMs}
           projectsHours={projectsHours}
         />
 

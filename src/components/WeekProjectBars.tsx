@@ -1,5 +1,5 @@
 import type { Project } from "@/types";
-import { HOUR, decimalHours, formatHM, pad } from "@/lib/utils";
+import { HOUR, formatHM, pad } from "@/lib/utils";
 import type { ProjectHours } from "@/components/WeekSummaryStrip";
 
 type WeekProjectBarsProps = {
@@ -19,7 +19,6 @@ export function WeekProjectBars({ projects, projectsHours }: WeekProjectBarsProp
         const ph = projectsHours.find(x => x.id === p.id) ?? { id: p.id, ms: 0 };
         const widthPct = (ph.ms / max) * 100;
         const targetPct = (p.target * HOUR / max) * 100;
-        const revenue = decimalHours(ph.ms) * p.rate;
         return (
           <div key={p.id} className="week-project">
             <div className="num">{pad(i + 1)}</div>
@@ -35,9 +34,6 @@ export function WeekProjectBars({ projects, projectsHours }: WeekProjectBarsProp
                 <div className="bar-target" style={{ left: targetPct + "%" }} />
               </div>
               <div className="figure mono">{formatHM(ph.ms)} / {p.target}h</div>
-            </div>
-            <div className="revenue mono">
-              ${revenue.toLocaleString("en-US", { maximumFractionDigits: 0 })}
             </div>
           </div>
         );
