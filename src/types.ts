@@ -3,10 +3,12 @@ export type Project = {
   client: string;
   name: string;
   color: string;
-  rate: number;
   target: number;
   note: string;
 };
+
+export const ENTRY_TYPES = ["work", "meeting", "planning", "other"] as const;
+export type EntryType = (typeof ENTRY_TYPES)[number];
 
 export type Entry = {
   id: string;
@@ -14,6 +16,7 @@ export type Entry = {
   start: string;
   end: string | null;
   note: string;
+  type?: EntryType;
   _running?: boolean;
 };
 

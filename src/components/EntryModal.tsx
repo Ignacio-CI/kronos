@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { Entry, Project } from "@/types";
-import { decimalHours, formatHMS, pad, renderMD } from "@/lib/utils";
+import { ENTRY_TYPES, type Entry, type EntryType, type Project } from "@/types";
+import { decimalHours, entryTypeLabel, formatHMS, pad, renderMD } from "@/lib/utils";
 import { generateEntryId } from "@/lib/db";
 
 export type EntryDraft = Partial<Entry>;
@@ -13,22 +13,29 @@ type EntryModalProps = {
   onClose: () => void;
 };
 
+const todayAt = (hour: number) => {
+  const d = new Date();
+  d.setHours(hour, 0, 0, 0);
+  return d;
+};
+
 export function EntryModal({ entry, projects, onSave, onDelete, onClose }: EntryModalProps) {
   const isNew = !entry.id;
   const [projectId, setProjectId] = useState<string>(entry.projectId ?? projects[0]!.id);
   const [date, setDate] = useState<string>(() => {
-    const d = new Date(entry.start ?? Date.now());
+    const d = new Date(entry.start ?? todayAt(9));
     return d.toISOString().slice(0, 10);
   });
   const [startTime, setStartTime] = useState<string>(() => {
-    const d = new Date(entry.start ?? Date.now());
+    const d = new Date(entry.start ?? todayAt(9));
     return pad(d.getHours()) + ":" + pad(d.getMinutes());
   });
   const [endTime, setEndTime] = useState<string>(() => {
-    const d = new Date(entry.end ?? (Date.now() + 60 * 60 * 1000));
+    const d = new Date(entry.end ?? todayAt(17));
     return pad(d.getHours()) + ":" + pad(d.getMinutes());
   });
   const [note, setNote] = useState<string>(entry.note ?? "");
+  const [type, setType] = useState<EntryType>(entry.type ?? "work");
 
   const startMs = new Date(date + "T" + startTime).getTime();
   const endMs = new Date(date + "T" + endTime).getTime();
@@ -42,12 +49,12 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
       start: new Date(startMs).toISOString(),
       end: new Date(endMs).toISOString(),
       note,
+      type,
     });
     onClose();
   };
 
   const project = projects.find(p => p.id === projectId);
-  const revenue = project ? decimalHours(dur) * project.rate : 0;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -63,13 +70,23 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
         </div>
 
         <div className="modal-body">
-          <div className="field">
-            <label>Project</label>
-            <select value={projectId} onChange={e => setProjectId(e.target.value)}>
-              {projects.map(p => (
-                <option key={p.id} value={p.id}>{p.client} — {p.name}</option>
-              ))}
-            </select>
+          <div className="field-row">
+            <div className="field">
+              <label>Project</label>
+              <select value={projectId} onChange={e => setProjectId(e.target.value)}>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.client} — {p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label>Type</label>
+              <select value={type} onChange={e => setType(e.target.value as EntryType)}>
+                {ENTRY_TYPES.map(t => (
+                  <option key={t} value={t}>{entryTypeLabel(t)}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="field-row">
@@ -115,14 +132,6 @@ export function EntryModal({ entry, projects, onSave, onDelete, onClose }: Entry
               <div>
                 <div className="lbl">Hours</div>
                 <div className="val">{decimalHours(dur).toFixed(2)}</div>
-              </div>
-              <div>
-                <div className="lbl">Rate</div>
-                <div className="val">${project.rate}/h</div>
-              </div>
-              <div>
-                <div className="lbl">Revenue</div>
-                <div className="val" style={{ color: "var(--accent)" }}>${revenue.toFixed(0)}</div>
               </div>
             </div>
           )}

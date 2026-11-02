@@ -1,4 +1,4 @@
-import type { Entry, Project } from "@/types";
+import type { Entry, EntryType, Project } from "@/types";
 
 export const MS = 1000;
 export const MIN = 60 * MS;
@@ -29,7 +29,7 @@ export function formatHM(ms: number): string {
   return h + "h " + pad(m) + "m";
 }
 
-// 4.32 (decimal hours, for revenue calcs)
+// 4.32 (decimal hours)
 export function decimalHours(ms: number): number {
   return ms / HOUR;
 }
@@ -117,12 +117,11 @@ export function renderMD(text: string | undefined): string {
 // CSV export
 export function toCSV(entries: Entry[], projects: Project[]): string {
   const rows: (string | number)[][] = [
-    ["id", "client", "project", "date", "start", "end", "duration_h", "rate", "revenue", "note"],
+    ["id", "client", "project", "date", "start", "end", "duration_h", "type", "note"],
   ];
   const projMap = Object.fromEntries(projects.map(p => [p.id, p]));
   
   let totalHours = 0;
-  let totalRevenue = 0;
 
   const sorted = [...entries].sort((a, b) => b.start.localeCompare(a.start));
 
@@ -133,10 +132,8 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
     const end = e.end ? new Date(e.end) : new Date();
     const dur = entryDuration(e);
     const hours = decimalHours(dur);
-    const revenue = hours * p.rate;
     
     totalHours += hours;
-    totalRevenue += revenue;
 
     rows.push([
       e.id,
@@ -146,8 +143,7 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
       formatTime(start),
       formatTime(end),
       hours.toFixed(2),
-      p.rate.toFixed(2),
-      revenue.toFixed(2),
+      entryType(e),
       (e.note || "").replace(/[\r\n]+/g, " ").replace(/"/g, '""'),
     ]);
   });
@@ -155,7 +151,7 @@ export function toCSV(entries: Entry[], projects: Project[]): string {
   // Add total row
   rows.push([
     "TOTAL", "", "", "", "", "", 
-    totalHours.toFixed(2), "", totalRevenue.toFixed(2), ""
+    totalHours.toFixed(2), "", ""
   ]);
 
   return rows.map(r => r.map(c => `"${c}"`).join(",")).join("\n");
@@ -170,4 +166,17 @@ export function downloadCSV(filename: string, content: string): void {
   document.body.appendChild(a);
   a.click();
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+
+export const entryType = (e: Entry): EntryType => e.type ?? "work";
+export const entryTypeLabel = (t: EntryType) => t[0]!.toUpperCase() + t.slice(1);
+
+// New entries fill the day from 09:00, or from where the day's last entry ended, until 17:00
+export function nextEntrySlot(entries: Entry[], day: Date): { start: string; end: string } {
+  const ends = entries
+    .filter(e => e.end && sameDay(new Date(e.start), day))
+    .map(e => new Date(e.end!).getTime());
+  const start = ends.length ? Math.max(...ends) : new Date(day).setHours(9, 0, 0, 0);
+  const end = Math.max(new Date(day).setHours(17, 0, 0, 0), start + HOUR);
+  return { start: new Date(start).toISOString(), end: new Date(end).toISOString() };
 }

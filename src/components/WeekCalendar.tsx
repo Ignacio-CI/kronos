@@ -8,7 +8,7 @@ type WeekCalendarProps = {
   projects: Project[];
   runningEntry: Entry | null;
   onEditEntry: (e: Entry) => void;
-  onAddAt: (d: Date, hourFloat: number) => void;
+  onAddAt: (d: Date) => void;
 };
 
 export function WeekCalendar({
@@ -83,12 +83,7 @@ export function WeekCalendar({
             key={i}
             className={"cal-day-col" + (sameDay(d, today) ? " today" : "")}
             style={{ minHeight: totalHeight }}
-            onDoubleClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const offsetY = e.clientY - rect.top;
-              const hourFloat = HOUR_START + offsetY / PX_PER_HOUR;
-              onAddAt(d, hourFloat);
-            }}
+            onDoubleClick={() => onAddAt(d)}
           >
             {Array.from({ length: TOTAL_HOURS }, (_, h) => (
               <div

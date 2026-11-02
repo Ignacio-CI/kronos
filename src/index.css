@@ -634,7 +634,7 @@ input, textarea, select {
 
 .week-summary {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0;
   border-top: 1px solid var(--rule);
 }
@@ -684,7 +684,7 @@ input, textarea, select {
 
 .week-project {
   display: grid;
-  grid-template-columns: 28px 1fr auto auto;
+  grid-template-columns: 28px 1fr auto;
   align-items: center;
   gap: 16px;
 }
@@ -743,14 +743,6 @@ input, textarea, select {
   min-width: 80px;
   text-align: right;
   color: var(--ink);
-}
-
-.week-project .revenue {
-  font-family: var(--font-data);
-  font-size: 12px;
-  color: var(--ink-3);
-  min-width: 90px;
-  text-align: right;
 }
 
 /* ============================================================

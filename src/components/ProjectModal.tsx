@@ -29,7 +29,6 @@ export function ProjectModal({
   const isNew = !project.id;
   const [client, setClient] = useState(project.client ?? "");
   const [name, setName] = useState(project.name ?? "");
-  const [rate, setRate] = useState<number | string>(project.rate ?? 200);
   const [target, setTarget] = useState<number | string>(project.target ?? 10);
   const [note, setNote] = useState(project.note ?? "");
   const [color, setColor] = useState(
@@ -45,7 +44,6 @@ export function ProjectModal({
       id: project.id ?? generateProjectId(),
       client: client.trim(),
       name: name.trim(),
-      rate: Number(rate) || 0,
       target: Number(target) || 0,
       color,
       note,
@@ -86,27 +84,15 @@ export function ProjectModal({
             />
           </div>
 
-          <div className="field-row">
-            <div className="field">
-              <label>Rate (USD / hour)</label>
-              <input
-                type="number"
-                min="0"
-                step="5"
-                value={rate}
-                onChange={e => setRate(e.target.value)}
-              />
-            </div>
-            <div className="field">
-              <label>Weekly target (hours)</label>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={target}
-                onChange={e => setTarget(e.target.value)}
-              />
-            </div>
+          <div className="field">
+            <label>Weekly target (hours)</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={target}
+              onChange={e => setTarget(e.target.value)}
+            />
           </div>
 
           <div className="field">

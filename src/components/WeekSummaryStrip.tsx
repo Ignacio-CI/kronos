@@ -1,28 +1,19 @@
-import { decimalHours, formatHM } from "@/lib/utils";
+import { formatHM } from "@/lib/utils";
 
 export type ProjectHours = { id: string; ms: number; longest?: number };
 
 type WeekSummaryStripProps = {
   weekMs: number;
-  weekRevenue: number;
   projectsHours: ProjectHours[];
-  billableMs: number;
 };
 
-export function WeekSummaryStrip({
-  weekMs, weekRevenue, projectsHours, billableMs,
-}: WeekSummaryStripProps) {
+export function WeekSummaryStrip({ weekMs, projectsHours }: WeekSummaryStripProps) {
   return (
     <div className="week-summary">
       <div className="cell">
         <div className="label">Week to date</div>
         <div className="value mono">{formatHM(weekMs)}</div>
         <div className="sub">across {projectsHours.filter(p => p.ms > 0).length} projects</div>
-      </div>
-      <div className="cell">
-        <div className="label">Billable</div>
-        <div className="value mono">${weekRevenue.toLocaleString("en-US", { maximumFractionDigits: 0 })}</div>
-        <div className="sub">{decimalHours(billableMs).toFixed(2)} h logged</div>
       </div>
       <div className="cell">
         <div className="label">Daily average</div>

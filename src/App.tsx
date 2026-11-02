@@ -18,8 +18,8 @@ import {
 } from "@/lib/db";
 import {
     addDays,
-    decimalHours,
     entryDuration,
+    nextEntrySlot,
     startOfDay,
     startOfWeekMon,
 } from "@/lib/utils";
@@ -125,14 +125,9 @@ export default function App() {
         Object.values(totals).reduce((s, t) => s + t.weekMs, 0) +
         (active ? runningMs : 0);
 
-    const weekRevenue = projects.reduce((s, p) => {
-        const t = totals[p.id]!;
-        const ms =
-            t.weekMs + (active && active.projectId === p.id ? runningMs : 0);
-        return s + decimalHours(ms) * p.rate;
-    }, 0);
-
     // === actions ===
+    const newEntryOn = (day: Date) => setEditingEntry(nextEntrySlot(entries, day));
+
     const startTimer = (projectId: string) => {
         if (active && active.projectId === projectId) {
             stopTimer();
@@ -224,7 +219,7 @@ export default function App() {
                 activeProject={activeProject}
                 runningMs={runningMs}
                 today={today}
-                onNewEntry={() => setEditingEntry({})}
+                onNewEntry={() => newEntryOn(new Date())}
                 onNewProject={() => setEditingProject({})}
                 onExportCSV={exportCSV}
             />
@@ -243,7 +238,6 @@ export default function App() {
                         onEditProject={(p) => setEditingProject(p)}
                         onAddProject={() => setEditingProject({})}
                         weekTotalMs={weekTotalMs}
-                        weekRevenue={weekRevenue}
                         timerStyle={tweaks.timerStyle}
                     />
                 )}
@@ -255,25 +249,10 @@ export default function App() {
                         weekStart={calWeekStart}
                         weekEnd={calWeekEnd}
                         onEditEntry={setEditingEntry}
-                        onAddAt={(d, hourFloat) => {
-                            const start = new Date(d);
-                            start.setHours(
-                                Math.floor(hourFloat),
-                                Math.round((hourFloat % 1) * 60),
-                                0,
-                                0,
-                            );
-                            const end = new Date(
-                                start.getTime() + 60 * 60 * 1000,
-                            );
-                            setEditingEntry({
-                                start: start.toISOString(),
-                                end: end.toISOString(),
-                            });
-                        }}
+                        onAddAt={newEntryOn}
                         offset={calWeekOffset}
                         setOffset={setCalWeekOffset}
-                        onAdd={() => setEditingEntry({})}
+                        onAdd={() => newEntryOn(new Date())}
                     />
                 )}
             </main>
